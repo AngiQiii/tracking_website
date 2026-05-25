@@ -80,6 +80,12 @@ export default function CreateMovie({
     const isEdit = !!editMovie;
 
     if (isEdit) {
+      // If marked as Done, update timestamp
+      const updatedCreatedAt =
+        status === "Done" || status === "In progress"
+          ? new Date().toISOString()
+          : editMovie.createdAt;
+
       const { data, error } = await supabase
         .from("movies")
         .update({
@@ -90,9 +96,11 @@ export default function CreateMovie({
           more_episodes: moreEpisodes,
           seasons: type === "series" ? seasons : null,
           related_items: relatedItems,
+          created_at: updatedCreatedAt,
         })
         .eq("id", editMovie.id)
-        .select();
+        .select()
+        .single();
 
       if (error) {
         console.log("UPDATE FAILED:", error.message);
@@ -100,14 +108,15 @@ export default function CreateMovie({
       }
 
       onAddMovie({
-        id: editMovie.id,
-        type,
-        title,
-        status,
-        rating,
-        moreEpisodes,
-        seasons,
-        relatedItems,
+        id: data.id,
+        type: data.type,
+        title: data.title,
+        status: data.status,
+        rating: data.rating,
+        moreEpisodes: data.more_episodes,
+        seasons: data.seasons,
+        relatedItems: data.related_items || [],
+        createdAt: data.created_at,
       });
 
       onCancel();

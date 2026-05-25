@@ -17,15 +17,19 @@ type Profile = {
 };
 
 function reorderMovies(movies: Movie[]) {
-  const notDone = movies
-    .filter((m) => m.status !== "Done")
+  const inProgress = movies
+    .filter((m) => m.status === "In progress")
+    .sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+
+  const notStarted = movies
+    .filter((m) => m.status === "Not started")
     .sort((a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""));
 
   const done = movies
     .filter((m) => m.status === "Done")
     .sort((a, b) => (a.createdAt ?? "").localeCompare(b.createdAt ?? ""));
 
-  return [...notDone, ...done];
+  return [...inProgress, ...notStarted, ...done];
 }
 
 export default function ProfilePage() {
@@ -107,7 +111,9 @@ export default function ProfilePage() {
           onCancel={() => setEditingMovie(null)}
           onAddMovie={(updatedMovie) => {
             setMovies((prev) =>
-              prev.map((m) => (m.id === updatedMovie.id ? updatedMovie : m)),
+              reorderMovies(
+                prev.map((m) => (m.id === updatedMovie.id ? updatedMovie : m)),
+              ),
             );
           }}
         />
@@ -115,12 +121,17 @@ export default function ProfilePage() {
         <CreateMovie
           onCancel={() => setMode("list")}
           onAddMovie={(movie) => {
-            setMovies((prev) =>
-              reorderMovies([
-                ...prev,
-                { ...movie, createdAt: new Date().toISOString() },
-              ]),
-            );
+            setMovies((prev) => {
+              const newMovie = {
+                ...movie,
+                createdAt:
+                  movie.status === "Not started"
+                    ? new Date().toISOString()
+                    : movie.createdAt,
+              };
+
+              return reorderMovies([...prev, newMovie]);
+            });
             setMode("list");
           }}
         />
