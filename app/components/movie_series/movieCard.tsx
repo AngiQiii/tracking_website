@@ -58,7 +58,9 @@ export default function MovieCard({
     setConfirmed(true);
   }
   return (
-    <div className={`w-full p-5 text-black/80 rounded-4xl flex flex-col gap-5 justify-self-center ${movie.moreEpisodes ? "bg-[#22c55e]" : "bg-primary"}`}>
+    <div
+      className={`w-full p-5 text-black/80 rounded-4xl flex flex-col gap-5 justify-self-center  ${movie.type === "series" && movie.moreEpisodes === true ? "bg-[#22c55e]" : "bg-primary"}`}
+    >
       <div className="flex  items-center justify-between max-mobile:flex-col max-mobile:items-start max-mobile:gap-2">
         <div className="flex items-start gap-3 max-mobile:gap-2">
           <div className="self-center">{getTypeIcon(movie.type)}</div>

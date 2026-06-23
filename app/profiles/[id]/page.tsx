@@ -10,6 +10,8 @@ import CreateMovie from "@/app/components/movie_series/createMovie";
 import type { Movie } from "../../types/movie";
 import { IoArrowBack } from "react-icons/io5";
 import Link from "next/link";
+import { FiShare } from "react-icons/fi";
+import { jsPDF } from "jspdf";
 
 type Profile = {
   id: number;
@@ -95,12 +97,44 @@ export default function ProfilePage() {
     setMovies((prev) => prev.filter((movie) => movie.id !== movieId));
   }
 
+  function downloadListHandler() {
+    const doc = new jsPDF();
+
+    doc.setFontSize(16);
+    doc.text("My Movies List", 10, 10);
+
+    let y = 20;
+
+    movies.forEach((movie, index) => {
+      const line = `${index + 1}. ${movie.title} (${movie.type}) - Rating: ${movie.rating}`;
+      console.log(line);
+
+      doc.setFontSize(11);
+      doc.text(line, 10, y);
+
+      y += 8;
+
+      // prevent overflow to next page
+      if (y > 280) {
+        doc.addPage();
+        y = 10;
+      }
+    });
+
+    doc.save("movies-list.pdf");
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <div className="w-full h-50 bg-contain bg-center" style={{ backgroundImage: `url(${profile.image})` }}></div>
-      <Link href="/profiles" className="p-5 self-start cursor-pointer bg-secondary rounded-full max-mobile:p-2">
-        <IoArrowBack size={30} className="max-mobile:w-5 max-mobile:h-5" />
-      </Link>
+      <div className="flex items-center gap-10 p-5">
+        <Link href="/profiles" className="p-5 self-start cursor-pointer bg-secondary rounded-full max-mobile:p-2">
+          <IoArrowBack size={30} className="max-mobile:w-5 max-mobile:h-5" />
+        </Link>
+        <button onClick={downloadListHandler} className="p-5 self-start cursor-pointer bg-secondary rounded-full max-mobile:p-2">
+          <FiShare size={30} className="max-mobile:w-5 max-mobile:h-5" />
+        </button>
+      </div>
 
       {editingMovie ? (
         <CreateMovie
@@ -127,7 +161,7 @@ export default function ProfilePage() {
         />
       ) : (
         <>
-          <button onClick={() => setMode("create")} className="sticky top-4 p-5 self-end cursor-pointer bg-secondary rounded-full max-mobile:p-2">
+          <button onClick={() => setMode("create")} className="sticky top-4 p-5 mr-5 self-end cursor-pointer bg-secondary rounded-full max-mobile:p-2">
             <FaPlus size={40} fill="#619b8a" className="max-mobile:w-5 max-mobile:h-5" />
           </button>
 
